@@ -160,7 +160,7 @@ def oauth(request):
 @api_view(['GET', 'POST'])
 def logs(request):
     if request.method == 'GET':
-        log = list(collection_log.find({}))        
+        log = list(collection_log.find({}).sort('iat', pymongo.DESCENDING))        
         for l in log:
             l['_id'] = str(ObjectId(l.get('_id',[])))
 

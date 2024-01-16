@@ -1,0 +1,36 @@
+<div class="container" *ngIf="!evento_subido">
+    <h1>Crear evento</h1>
+    <h2>Imagen</h2>
+    <input type="file" id="fileInput" accept="image/*" (change)="onFileSelected($event)"
+        class="form-control" />
+    <button *ngIf="!fotos_subidas" class="btn btn-primary mt-2" (click)="onButtonClicked()">
+        Subir imagen
+    </button>
+    <div *ngIf="fotos_subidas" class="alert alert-success mt-2" role="alert">
+        ¡Fotos subidas!
+    </div>
+
+    <h2>Datos</h2>
+    <!-- <form (ngSubmit)="onSubmit()">
+        <br />
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre:</label>
+            <input type="text" id="nombre" [(ngModel)]="prueba.nombre" name="nombre" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="lugar" class="form-label">Lugar:</label>
+            <input type="text" id="lugar" [(ngModel)]="prueba.lugar" name="lugar" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="timestamp" class="form-label">Fecha:</label>
+            <input type="datetime-local" id="timestamp" [(ngModel)]="prueba.timestamp" name="cierre"
+                class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-mt-3">Crear</button>
+    </form> -->
+</div>
+<div class="container" *ngIf="evento_subido">
+    <h1>EVENTO CREADO</h1>
+</div>

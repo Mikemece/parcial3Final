@@ -3,6 +3,7 @@ import { InicioComponent } from './features/inicio/inicio.component';
 import { ImagenesComponent } from './features/imagenes/imagenes.component';
 import { MapaComponent } from './features/mapa/mapa.component';
 import { LogComponent } from './features/log/log.component';
+import { CrearComponent } from './features/crear/crear.component';
 
 export const routes: Routes = [
 
@@ -25,5 +26,10 @@ export const routes: Routes = [
         path: 'logs',
         component: LogComponent,
         title: 'Logs'
+    },
+    {
+        path: 'crear',
+        component: CrearComponent,
+        title: 'Crear'
     }
 ];
