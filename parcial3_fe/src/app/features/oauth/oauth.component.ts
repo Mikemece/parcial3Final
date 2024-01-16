@@ -13,13 +13,11 @@ import { OauthService } from '../../../../../parcial3_fe/src/app/services/oauth-
   providers: [OauthService]
 })
 export class OauthComponent{
-  idToken: any;
   user: SocialUser = new SocialUser;
   loggedIn: any;
   constructor(private authService: SocialAuthService, private router: Router, private oauthService: OauthService) { }
 
   ngOnInit() {
-    
     this.authService.authState.subscribe((user) => {
       this.user = user;
       this.loggedIn = (user != null);
@@ -28,4 +26,6 @@ export class OauthComponent{
       }
     });
   }
+
+
 }

@@ -1,8 +1,7 @@
 from django.http import HttpResponse
-from parcial3_beapp.serializers import PruebaSerializer, TokenSerializer
+from parcial3_beapp.serializers import PruebaSerializer, TokenSerializer, LogSerializer
 import pymongo
 import requests
-import json
 
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -11,29 +10,28 @@ import cloudinary
 import cloudinary.uploader
 
 from datetime import datetime
-from dateutil import parser
+from geopy.geocoders import Nominatim
 
 from bson import ObjectId
 from rest_framework.response import Response
 
 from django.http.response import JsonResponse
 from rest_framework.decorators import api_view
-from rest_framework.parsers import JSONParser
 from rest_framework import status
 
-from pymongo import ReturnDocument
-
-from django.shortcuts import render, get_object_or_404
-
+# -------- Geopy ---------
+geolocator = Nominatim(user_agent="my_geocoder")
 
 # Conexión a la base de datos MongoDB
 my_client = pymongo.MongoClient('mongodb+srv://parcial:parcial@1parcial23.zzs3aop.mongodb.net/')
 
 # Nombre de la base de datos
-dbname = my_client['parcial3']
+dbname = my_client['parcial3final']
 
 # Colecciones
-collection_prueba = dbname["Prueba"]
+collection_prueba = dbname["prueba"]
+collection_log = dbname["log"]
+
 
 # ---------------- EL CRUD DE LAS TABLAS ---------------------- 
 
@@ -156,3 +154,76 @@ def oauth(request):
                                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+# ------------------ CREACION LOG -------------------------
+        
+@api_view(['GET', 'POST'])
+def logs(request):
+    if request.method == 'GET':
+        log = list(collection_log.find({}))        
+        for l in log:
+            l['_id'] = str(ObjectId(l.get('_id',[])))
+
+        log_serializer = LogSerializer(data=log, many= True)
+        if log_serializer.is_valid():
+            json_data = log_serializer.data
+            return Response(json_data, status=status.HTTP_200_OK)
+        else:
+            return Response(log_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'POST':
+        serializer = LogSerializer(data=request.data)
+        if serializer.is_valid():
+            log = serializer.validated_data
+            log['_id'] = ObjectId()
+            result = collection_log.insert_one(log)
+            if result.acknowledged:
+                return Response({"message": "Log creado con éxito."}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"error": "Algo salió mal. Log no creado."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+@api_view(['GET'])
+def log(request, idl):
+    if request.method == 'GET':
+            l = collection_log.find_one({'tokenID': idl})
+            l['_id'] = str(ObjectId(l.get('_id', [])))
+
+            serializer = LogSerializer(data=l)
+            if serializer.is_valid():
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+# ------------------------ GEOCODING -----------------
+# @api_view(["GET"])
+# def find_by_lon_and_lat(request, direccion):
+#     if request.method == "GET":
+#         location = geolocator.geocode(direccion)
+#         if location:
+#             query = {
+#                 "lat": {
+#                     "$gte": location.latitude - 0.2,
+#                     "$lte": location.latitude + 0.2,
+#                 },
+#                 "lon": {
+#                     "$gte": location.longitude - 0.2,
+#                     "$lte": location.longitude + 0.2,
+#                 },
+#             }
+#             prueba = list(collection_prueba.find(query).sort("timestamp", pymongo.ASCENDING))
+#             for p in prueba:
+#                 p["_id"] = str(ObjectId(p.get("_id", [])))
+
+#             prueba_serializer = PruebaSerializer(data=prueba, many=True)
+#             if prueba_serializer.is_valid():
+#                 json_data = prueba_serializer.data
+#                 return Response(json_data, status=status.HTTP_200_OK)
+#             else:
+#                 return Response(
+#                     prueba_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+#                 )
+#         else:
+#             return Response({"error": "Dirección no válida"})

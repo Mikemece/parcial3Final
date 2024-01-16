@@ -41,5 +41,8 @@ export class NavbarComponent{
   redirigirMapa(): void{
     this.router.navigate(['/mapa'])
   }
+  redirigirLogs(): void{
+    this.router.navigate(['/logs'])
+  }
 
 }
