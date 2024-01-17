@@ -13,7 +13,7 @@ export class PruebaService {
 
   getAll() : Observable<any> {
     //const url = 'http://localhost:8000/api/pagos/';
-    const url = 'http://13.36.188.166:8000/api/pruebas/';
+    const url = 'http://13.36.188.166:8000/api/pagos/';
     return this.http.get<any>(url);
   }
 
