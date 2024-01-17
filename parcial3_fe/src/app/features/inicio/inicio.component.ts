@@ -18,11 +18,18 @@ export class InicioComponent implements OnInit {
   email: any = localStorage.getItem("email");
 
   constructor(private pruebaService: PruebaService, private router: Router) { }
-  prueba: any[] = [];
+  pagos: any[] = [];
 
   ngOnInit(): void {
     this.pruebaService.getAll().subscribe((data) => {
-      this.prueba = data;
+      this.pagos = data;
+    })
+  }
+
+  eliminar(idp: string){
+
+    this.pruebaService.deletePago(idp).subscribe(response =>{
+      location.reload();
     })
   }
 

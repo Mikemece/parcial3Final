@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from parcial3_beapp.serializers import PruebaSerializer, TokenSerializer, LogSerializer
+from parcial3_beapp.serializers import PagoSerializer, TokenSerializer, LogSerializer
 import pymongo
 import requests
 
@@ -29,75 +29,76 @@ my_client = pymongo.MongoClient('mongodb+srv://parcial:parcial@1parcial23.zzs3ao
 dbname = my_client['parcial3final']
 
 # Colecciones
-collection_prueba = dbname["prueba"]
+collection_pago = dbname["pago"]
 collection_log = dbname["log"]
 
 
 # ---------------- EL CRUD DE LAS TABLAS ---------------------- 
 
 @api_view(['GET', 'POST'])
-def pruebas(request):
+def pagos(request):
     if request.method == 'GET':
-        prueba = list(collection_prueba.find({}))        
-        for p in prueba:
+        pago = list(collection_pago.find({}).sort('timestamp', pymongo.DESCENDING))        
+        for p in pago:
             p['_id'] = str(ObjectId(p.get('_id',[])))
-            p['objid'] = str(ObjectId(p.get('objid',[])))
 
-        prueba_serializer = PruebaSerializer(data=prueba, many= True)
-        if prueba_serializer.is_valid():
-            json_data = prueba_serializer.data
+        pago_serilizer = PagoSerializer(data=pago, many= True)
+        if pago_serilizer.is_valid():
+            json_data = pago_serilizer.data
             return Response(json_data, status=status.HTTP_200_OK)
         else:
-            return Response(prueba_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(pago_serilizer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
     elif request.method == 'POST':
-        serializer = PruebaSerializer(data=request.data)
+        serializer = PagoSerializer(data=request.data)
         if serializer.is_valid():
-            prueba = serializer.validated_data
-            prueba['_id'] = ObjectId()
-            prueba['date'] = datetime.now()
-            prueba['array'] = []
-            prueba['objid'] = ObjectId(prueba['objid'])
-            result = collection_prueba.insert_one(prueba)
+            pago = serializer.validated_data
+            pago['_id'] = ObjectId()
+            pago['timestamp'] = datetime.now()
+            location = geolocator.geocode(pago['localizacion'])
+            if location:
+                pago['lat'] = location.latitude
+                pago['long'] = location.longitude
+                #pago['cpostal'] = location.raw.get('address', {}).get('postcode')
+            result = collection_pago.insert_one(pago)
             if result.acknowledged:
-                return Response({"message": "Producto creado con éxito."}, status=status.HTTP_201_CREATED)
+                return Response({"message": "Pago creado con éxito."}, status=status.HTTP_201_CREATED)
             else:
-                return Response({"error": "Algo salió mal. Producto no creado."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({"error": "Algo salió mal. Pago no creado."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET','PUT', 'DELETE'])
-def prueba(request, idp):
+def pago(request, idp):
     if request.method == 'PUT':
-        serializer = PruebaSerializer(data=request.data)
+        serializer = PagoSerializer(data=request.data)
         if serializer.is_valid():
-            prueba = serializer.validated_data
-            prueba['_id'] = ObjectId(idp)
-            result = collection_prueba.replace_one({'_id': ObjectId(idp)}, prueba)
+            pago = serializer.validated_data
+            pago['_id'] = ObjectId(idp)
+            result = collection_pago.replace_one({'_id': ObjectId(idp)}, pago)
             if result.acknowledged:
-                return Response({"message": "Usuario actualizado con éxito",},
+                return Response({"message": "Pago actualizado con éxito",},
                                 status=status.HTTP_200_OK)
             else:
-                return Response({"error": "Algo salió mal. Usuario no actualizado."},
+                return Response({"error": "Algo salió mal. Pago no actualizado."},
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
     elif request.method == 'GET':
-            p = collection_prueba.find_one({'_id': ObjectId(idp)})
+            p = collection_pago.find_one({'_id': ObjectId(idp)})
             p['_id'] = str(ObjectId(p.get('_id', [])))
-            p['objid'] = str(ObjectId(p.get('objid', [])))
 
-            serializer = PruebaSerializer(data=p)
+            serializer = PagoSerializer(data=p)
             if serializer.is_valid():
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
     elif request.method == 'DELETE' :
-        delete_data = collection_prueba.delete_one({'_id': ObjectId(idp)})
+        delete_data = collection_pago.delete_one({'_id': ObjectId(idp)})
         if delete_data.deleted_count == 1:
             return Response({"mensaje": "Usuario eliminado con éxito"}, status=status.HTTP_200_OK)
         else:
@@ -176,6 +177,7 @@ def logs(request):
         if serializer.is_valid():
             log = serializer.validated_data
             log['_id'] = ObjectId()
+            
             result = collection_log.insert_one(log)
             if result.acknowledged:
                 return Response({"message": "Log creado con éxito."}, status=status.HTTP_201_CREATED)
@@ -213,17 +215,17 @@ def log(request, idl):
 #                     "$lte": location.longitude + 0.2,
 #                 },
 #             }
-#             prueba = list(collection_prueba.find(query).sort("timestamp", pymongo.ASCENDING))
-#             for p in prueba:
+#             pago = list(collection_pago.find(query).sort("timestamp", pymongo.ASCENDING))
+#             for p in pago:
 #                 p["_id"] = str(ObjectId(p.get("_id", [])))
 
-#             prueba_serializer = PruebaSerializer(data=prueba, many=True)
-#             if prueba_serializer.is_valid():
-#                 json_data = prueba_serializer.data
+#             pago_serilizer = PagoSerializer(data=pago, many=True)
+#             if pago_serilizer.is_valid():
+#                 json_data = pago_serilizer.data
 #                 return Response(json_data, status=status.HTTP_200_OK)
 #             else:
 #                 return Response(
-#                     prueba_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+#                     pago_serilizer.errors, status=status.HTTP_400_BAD_REQUEST
 #                 )
 #         else:
 #             return Response({"error": "Dirección no válida"})

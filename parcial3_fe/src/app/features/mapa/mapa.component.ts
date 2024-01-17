@@ -4,31 +4,42 @@ import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
+import { PruebaService } from '../../services/prueba-serv/prueba.service';
 
 @Component({
   selector: 'app-mapa',
   standalone: true,
   imports: [CommonModule, HttpClientModule],
   templateUrl: './mapa.component.html',
-  styleUrl: './mapa.component.css'
+  styleUrl: './mapa.component.css',
+  providers: [PruebaService]
 })
 export class MapaComponent implements OnInit{
-  location = {latitude: 36.7213, longitude: -4.4213};
-  marker1 = {latitude: 37.7213, longitude: -5.4213};
-  marker2 = {latitude: 36.7213, longitude: -4.0};
+  locations: any[] = [];
+  pagos: any[] = [];
+  longs: any[] = [];
+  lats: any[] = [];
   private map!: L.Map;
 
-  constructor(private http: HttpClient, private route: ActivatedRoute){}
+  constructor(private http: HttpClient, private route: ActivatedRoute, private pruebaService: PruebaService){}
   
   ngOnInit(): void {
-    this.initMap(this.location);
+    this.pruebaService.getAll().subscribe((data) => {
+      this.pagos = data;
+      for (let i = 0; i < this.pagos.length; i++) {
+        this.locations[i] = {latitude: this.pagos[i].lat, longitude: this.pagos[i].long}
+        console.log(this.locations[i])
+      }
+      this.initMap(this.locations[0]);
+    })
+
     //this.updateMarkers([this.marker1, this.marker2])
   }
 
   /**Inicia un mapa con la localización enviada por atributo.*/
   private initMap(location: { latitude: number; longitude: number }): void {
 
-    this.map = L.map('map').setView([this.location.latitude, this.location.longitude], 200);
+    this.map = L.map('map').setView([this.locations[0].latitude, this.locations[0].longitude], 200);
     
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 16,
@@ -36,10 +47,16 @@ export class MapaComponent implements OnInit{
     }).addTo(this.map);
 
     //POSIBLES MARCADORES QUE PODEIS PROBAR:
-  
-    L.marker([location.latitude, location.longitude])
-      .addTo(this.map)
-      .openPopup();
+    for (let i = 0; i < this.locations.length; i++) {
+        L.marker([this.locations[i].latitude, this.locations[i].longitude])
+       .addTo(this.map)
+       .openPopup();
+    }
+
+    }
+    // L.marker([location.latitude, location.longitude])
+    //   .addTo(this.map)
+    //   .openPopup();
 
     /*L.circle([location.latitude, location.longitude], {
       color: 'red',
@@ -51,18 +68,8 @@ export class MapaComponent implements OnInit{
     //L.circleMarker([location.latitude, location.longitude]).addTo(this.map).openPopup();
 
     //CON ESTO SE PUEDEN HACER LINEAS (es un polígono con 2 vertices)
-    L.polygon([
-      [this.marker1.latitude, this.marker1.longitude],
-      [this.marker2.latitude, this.marker2.longitude]
-      ]).addTo(this.map);
+    // L.polygon([
+    //   [this.marker1.latitude, this.marker1.longitude],
+    //   [this.marker2.latitude, this.marker2.longitude]
+    //   ]).addTo(this.map);
   }
-  /**Crea un marker en cada posición enviada como array*/
-  updateMarkers(markerLocations: { latitude: number; longitude: number }[]): void{
-    for(const marker of markerLocations){
-      this.location = marker;
-      L.marker([marker.latitude, marker.longitude])
-      .addTo(this.map)
-      .openPopup();
-    }
-  }
-}

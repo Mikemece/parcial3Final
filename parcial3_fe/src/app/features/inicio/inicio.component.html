@@ -2,8 +2,33 @@
 @if(email){
 <h1>HOLA: {{email}}</h1>
 }
-<div *ngFor="let p of prueba; let i = index">
-    <h2>{{p.string}}</h2>
+
+<h2>Pagos realizados:</h2>
+
+<div class="container">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-4">
+        <div *ngFor="let pago of pagos; let i = index" class="col">
+            <div class="card h-100">
+                <img [src]="pago.imagen" class="card-img-top" alt="Event Image">
+                <div class="card-body">
+                    <h5 class="card-title">{{pago.concepto}}</h5>
+                    <div class="card-text">
+                           <p>Fecha: {{pago.timestamp}} </p>
+                           <p>Email: {{pago.email}} </p>
+                           <p>Token: {{pago.token}} </p>
+                           <p>Localizacion: {{pago.localizacion}}</p>
+                           <p>Latitud: {{pago.lat}}</p>
+                           <p>Longitud: {{pago.long}}</p>
+                    </div>
+                    <div class="card-footer">
+                        <h5>{{pago.importe}}€</h5>
+                        
+                        <button type="button" (click)="eliminar(pago._id)" class="btn btn-danger">ELIMINAR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <button type="button" (click)="redirigirCrear()" class="btn btn-primary">Crear</button>

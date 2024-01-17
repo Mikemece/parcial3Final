@@ -5,6 +5,7 @@ import { ImagenService } from '../../services/imagen-serv/imagen.service';
 import { PruebaService } from '../../services/prueba-serv/prueba.service';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Pago } from '../../interfaces/Pago';
 
 @Component({
   selector: 'app-crear',
@@ -15,10 +16,24 @@ import { Router } from '@angular/router';
   providers: [ImagenService, PruebaService],
 })
 export class CrearComponent {
+  email: any = localStorage.getItem('email')
+  token: any = localStorage.getItem('email')
   selectedFiles: File[] = [];
   urls: any[] = [];
   fotos_subidas: boolean = false;
   evento_subido : boolean = false;
+  pago: Pago = {
+    id:'',
+    timestamp: new Date(),
+    email: '',
+    concepto: '',
+    token: '',
+    importe: 0,
+    imagen: '',
+    localizacion: '',
+    long: 0,
+    lat: 0
+  }
 
   constructor(
     private http: HttpClient,
@@ -47,7 +62,7 @@ export class CrearComponent {
         .subscribe((response) => {
           if (response) {
             this.urls = response.urls;
-            //this.prueba.imagen = this.urls[0];
+            this.pago.imagen = this.urls[0];
             this.fotos_subidas = true;
           }
         });
@@ -55,13 +70,12 @@ export class CrearComponent {
   }
 
   onSubmit() {
-    let organizador : any;
-    // organizador = localStorage.getItem('email');
-    // //this.prueba.organizador = 'diegolr02@uma.es';
-
-    // //this.pruebaService.createPrueba(this.prueba).subscribe(response => {
-    //   console.log(response);
-    //   this.evento_subido = true;
-    // });
-     }
+    //this.pago.email = this.email;
+    //this.pago.email = 'mcmiguel@uma.es';
+    this.pago.token = '1234'; // esta hardcoded porque haciendo el examen no iba el oAuth
+    this.pruebaService.newPago(this.pago).subscribe(response => {
+      console.log(response);
+      this.evento_subido = true;
+    });
+  }
 }
