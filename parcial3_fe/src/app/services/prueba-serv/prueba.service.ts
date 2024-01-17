@@ -12,20 +12,20 @@ export class PruebaService {
   constructor(private http:HttpClient) { }
 
   getAll() : Observable<any> {
-    const url = 'http://localhost:8000/api/pagos/';
-    //const url = 'http://13.36.188.166:8000/api/pruebas/';
+    //const url = 'http://localhost:8000/api/pagos/';
+    const url = 'http://13.36.188.166:8000/api/pruebas/';
     return this.http.get<any>(url);
   }
 
   newPago(pago :Pago): Observable<any>{
-    const url = 'http://localhost:8000/api/pagos/';
-    //const url = 'http://13.36.188.166:8000/api/pruebas/';
+    //const url = 'http://localhost:8000/api/pagos/';
+    const url = 'http://13.36.188.166:8000/api/pagos/';
     return this.http.post<any>(url, pago);
   }
 
   deletePago(idp: string): Observable<any>{
-    const url = 'http://localhost:8000/api/pagos/'+ idp +'/';
-    //const url = 'http://13.36.188.166:8000/api/pruebas/';
+    //const url = 'http://localhost:8000/api/pagos/'+ idp +'/';
+    const url = 'http://13.36.188.166:8000/api/pagos/'+ idp +'/';
     return this.http.delete<any>(url);
   }
 
